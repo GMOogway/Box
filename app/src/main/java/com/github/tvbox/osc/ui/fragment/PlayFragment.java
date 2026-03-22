@@ -898,6 +898,16 @@ public class PlayFragment extends BaseLazyFragment {
                 logMsg = "IjkmPlayer has internal subtitles, setting hasInternal = true";
                 LOG.i(logMsg);
                 writeDebugLog(logMsg);
+                // 自动选择第一个字幕轨道
+                int selectedSubtitle = trackInfo.getSubtitleSelected(true);
+                List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
+                if (selectedSubtitle == -1 && subtitleList.size() > 0) {
+                    TrackInfoBean firstSubtitle = subtitleList.get(0);
+                    logMsg = "Auto-selecting first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                    ((IjkmPlayer) mVideoView.getMediaPlayer()).setTrack(firstSubtitle.trackId);
+                }
             }
             ((IjkmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new IMediaPlayer.OnTimedTextListener() {
                 @Override
@@ -931,6 +941,16 @@ public class PlayFragment extends BaseLazyFragment {
                 logMsg = "EXOmPlayer has internal subtitles, setting hasInternal = true";
                 LOG.i(logMsg);
                 writeDebugLog(logMsg);
+                // 自动选择第一个字幕轨道
+                int selectedSubtitle = trackInfo.getSubtitleSelected(true);
+                List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
+                if (selectedSubtitle == -1 && subtitleList.size() > 0) {
+                    TrackInfoBean firstSubtitle = subtitleList.get(0);
+                    logMsg = "Auto-selecting first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                    ((EXOmPlayer) mVideoView.getMediaPlayer()).selectExoTrack(firstSubtitle);
+                }
             }
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
@@ -970,6 +990,16 @@ public class PlayFragment extends BaseLazyFragment {
                 logMsg = "AndroidMediaPlayer has internal subtitles, setting hasInternal = true";
                 LOG.i(logMsg);
                 writeDebugLog(logMsg);
+                // 自动选择第一个字幕轨道
+                int selectedSubtitle = trackInfo.getSubtitleSelected(true);
+                List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
+                if (selectedSubtitle == -1 && subtitleList.size() > 0) {
+                    TrackInfoBean firstSubtitle = subtitleList.get(0);
+                    logMsg = "Auto-selecting first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                    ((AndroidMediaPlayer) mVideoView.getMediaPlayer()).setTrack(firstSubtitle.trackId);
+                }
             }
             ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
                 @Override
