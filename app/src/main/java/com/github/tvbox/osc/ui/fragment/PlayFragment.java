@@ -902,19 +902,19 @@ public class PlayFragment extends BaseLazyFragment {
             ((IjkmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new IMediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
-                    String logMsg = "IjkmPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
+                    final String logMsg1 = "IjkmPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
                     if (mController.mSubtitleView.isInternal && text != null) {
                         String textContent = text.getText();
-                        logMsg = "IjkmPlayer subtitle text: " + textContent;
-                        LOG.i(logMsg);
-                        writeDebugLog(logMsg);
+                        final String logMsg2 = "IjkmPlayer subtitle text: " + textContent;
+                        LOG.i(logMsg2);
+                        writeDebugLog(logMsg2);
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = textContent;
-                        logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
-                        LOG.i(logMsg);
-                        writeDebugLog(logMsg);
+                        final String logMsg3 = "Calling onSubtitleChanged with: " + subtitle.content;
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
@@ -935,20 +935,20 @@ public class PlayFragment extends BaseLazyFragment {
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
                 public void onCues(@NonNull List<Cue> cues) {
-                    logMsg = "EXOmPlayer onCues called, cues size: " + cues.size();
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
+                    final String logMsg1 = "EXOmPlayer onCues called, cues size: " + cues.size();
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
                     if (cues.size() > 0) {
                         CharSequence ss = cues.get(0).text;
-                        logMsg = "EXOmPlayer subtitle text: " + (ss != null ? ss.toString() : "null");
-                        LOG.i(logMsg);
-                        writeDebugLog(logMsg);
+                        final String logMsg2 = "EXOmPlayer subtitle text: " + (ss != null ? ss.toString() : "null");
+                        LOG.i(logMsg2);
+                        writeDebugLog(logMsg2);
                         if (ss != null && mController.mSubtitleView.isInternal) {
                             Subtitle subtitle = new Subtitle();
                             subtitle.content = ss.toString();
-                            logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
-                            LOG.i(logMsg);
-                            writeDebugLog(logMsg);
+                            final String logMsg3 = "Calling onSubtitleChanged with: " + subtitle.content;
+                            LOG.i(logMsg3);
+                            writeDebugLog(logMsg3);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
                     }else{
@@ -974,19 +974,19 @@ public class PlayFragment extends BaseLazyFragment {
             ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(MediaPlayer mp, TimedText text) {
-                    logMsg = "AndroidMediaPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
+                    final String logMsg1 = "AndroidMediaPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
                     if (mController.mSubtitleView.isInternal && text != null) {
                         String textContent = text.getText();
-                        logMsg = "AndroidMediaPlayer subtitle text: " + textContent;
-                        LOG.i(logMsg);
-                        writeDebugLog(logMsg);
+                        final String logMsg2 = "AndroidMediaPlayer subtitle text: " + textContent;
+                        LOG.i(logMsg2);
+                        writeDebugLog(logMsg2);
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = textContent;
-                        logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
-                        LOG.i(logMsg);
-                        writeDebugLog(logMsg);
+                        final String logMsg3 = "Calling onSubtitleChanged with: " + subtitle.content;
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
