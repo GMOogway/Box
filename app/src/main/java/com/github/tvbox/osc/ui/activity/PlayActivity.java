@@ -993,22 +993,71 @@ public class PlayActivity extends BaseActivity {
                     LOG.i(logMsg2);
                     writeDebugLog(logMsg2);
 
-                    if (mController.mSubtitleView.isInternal && text != null) {
-                        String textContent = text.getText();
-                        final String logMsg3 = "text content: [" + (textContent != null ? textContent : "null") + "]";
+                    if (text != null) {
+                        String logMsg3 = "IjkTimedText object not null";
                         LOG.i(logMsg3);
                         writeDebugLog(logMsg3);
 
-                        Subtitle subtitle = new Subtitle();
-                        subtitle.content = textContent;
-                        final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
-                        LOG.i(logMsg4);
-                        writeDebugLog(logMsg4);
-                        mController.mSubtitleView.onSubtitleChanged(subtitle);
+                        // 检查文本字幕
+                        String textContent = text.getText();
+                        logMsg3 = "text.getText(): [" + (textContent != null ? textContent : "null") + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        // 检查图形字幕
+                        int[] bitmapData = text.getBitmapData();
+                        logMsg3 = "text.getBitmapData(): " + (bitmapData != null ? "not null" : "null");
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        if (bitmapData != null) {
+                            logMsg3 = "Bitmap subtitle detected, length: " + bitmapData.length;
+                            LOG.i(logMsg3);
+                            writeDebugLog(logMsg3);
+                            // 图形字幕无法直接显示，需要渲染
+                            // 这里暂时跳过
+                        }
+
+                        // 检查文本边框
+                        android.graphics.Rect bounds = text.getBounds();
+                        logMsg3 = "text.getBounds(): " + (bounds != null ? bounds.toString() : "null");
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        // 尝试使用 toString()
+                        String textString = text.toString();
+                        logMsg3 = "text.toString(): [" + textString + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        // 如果getText()为空，尝试使用toString()
+                        if ((textContent == null || textContent.isEmpty()) && textString != null && !textString.isEmpty()) {
+                            textContent = textString;
+                            logMsg3 = "Using toString() content instead: [" + textContent + "]";
+                            LOG.i(logMsg3);
+                            writeDebugLog(logMsg3);
+                        }
+
+                        logMsg3 = "Final text content: [" + (textContent != null ? textContent : "null") + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        if (mController.mSubtitleView.isInternal && textContent != null && !textContent.isEmpty()) {
+                            Subtitle subtitle = new Subtitle();
+                            subtitle.content = textContent;
+                            final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                            LOG.i(logMsg4);
+                            writeDebugLog(logMsg4);
+                            mController.mSubtitleView.onSubtitleChanged(subtitle);
+                        } else {
+                            final String logMsg5 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", textContent: " + (textContent != null ? textContent : "null");
+                            LOG.i(logMsg5);
+                            writeDebugLog(logMsg5);
+                        }
                     } else {
-                        final String logMsg5 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", text: " + (text != null ? "not null" : "null");
-                        LOG.i(logMsg5);
-                        writeDebugLog(logMsg5);
+                        final String logMsg6 = "IjkTimedText object is null";
+                        LOG.i(logMsg6);
+                        writeDebugLog(logMsg6);
                     }
                 }
             });
@@ -1057,18 +1106,59 @@ public class PlayActivity extends BaseActivity {
                     writeDebugLog(logMsg2);
 
                     if (cues.size() > 0) {
-                        CharSequence ss = cues.get(0).text;
-                        final String logMsg3 = "cue text: [" + (ss != null ? ss.toString() : "null") + "]";
-                        LOG.i(logMsg3);
-                        writeDebugLog(logMsg3);
+                        for (int i = 0; i < cues.size(); i++) {
+                            Cue cue = cues.get(i);
+                            final String logMsg3 = "Cue[" + i + "] text: [" + (cue.text != null ? cue.text.toString() : "null") + "]";
+                            LOG.i(logMsg3);
+                            writeDebugLog(logMsg3);
 
-                        if (ss != null && mController.mSubtitleView.isInternal) {
-                            Subtitle subtitle = new Subtitle();
-                            subtitle.content = ss.toString();
-                            final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                            final String logMsg4 = "Cue[" + i + "] line: " + cue.line;
                             LOG.i(logMsg4);
                             writeDebugLog(logMsg4);
+
+                            final String logMsg5 = "Cue[" + i + "] lineAnchor: " + cue.lineAnchor;
+                            LOG.i(logMsg5);
+                            writeDebugLog(logMsg5);
+
+                            final String logMsg6 = "Cue[" + i + "] verticalType: " + cue.verticalType;
+                            LOG.i(logMsg6);
+                            writeDebugLog(logMsg6);
+
+                            final String logMsg7 = "Cue[" + i + "] position: " + cue.position;
+                            LOG.i(logMsg7);
+                            writeDebugLog(logMsg7);
+
+                            final String logMsg8 = "Cue[" + i + "] size: " + cue.size;
+                            LOG.i(logMsg8);
+                            writeDebugLog(logMsg8);
+
+                            // 检查是否有 bitmap（图形字幕）
+                            final String logMsg9 = "Cue[" + i + "] bitmap: " + (cue.bitmap != null ? "not null" : "null");
+                            LOG.i(logMsg9);
+                            writeDebugLog(logMsg9);
+
+                            // 检查 Cue 的 toString
+                            final String logMsg10 = "Cue[" + i + "] toString: " + cue.toString();
+                            LOG.i(logMsg10);
+                            writeDebugLog(logMsg10);
+                        }
+
+                        CharSequence ss = cues.get(0).text;
+                        final String logMsg11 = "cue[0].text: [" + (ss != null ? ss.toString() : "null") + "]";
+                        LOG.i(logMsg11);
+                        writeDebugLog(logMsg11);
+
+                        if (ss != null && !ss.toString().isEmpty() && mController.mSubtitleView.isInternal) {
+                            Subtitle subtitle = new Subtitle();
+                            subtitle.content = ss.toString();
+                            final String logMsg12 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                            LOG.i(logMsg12);
+                            writeDebugLog(logMsg12);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
+                        } else {
+                            final String logMsg13 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", ss: " + (ss != null ? ss.toString() : "null");
+                            LOG.i(logMsg13);
+                            writeDebugLog(logMsg13);
                         }
                     } else {
                         Subtitle subtitle = new Subtitle();
