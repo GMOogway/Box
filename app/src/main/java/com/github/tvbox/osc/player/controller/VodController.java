@@ -1256,37 +1256,65 @@ public class VodController extends BaseController {
     protected void onPlayStateChanged(int playState) {
         super.onPlayStateChanged(playState);
         EventBus.getDefault().post(new RefreshEvent(RefreshEvent.TYPE_REFRESH_NOTIFY, null));
+
+        String stateName = "";
         switch (playState) {
             case VideoView.STATE_IDLE:
+                stateName = "IDLE";
                 break;
             case VideoView.STATE_PLAYING:
+                stateName = "PLAYING";
                 isPaused = false;
                 mPauseImg.setImageDrawable(getResources().getDrawable(R.drawable.v_pause));
                 startProgress();
                 break;
             case VideoView.STATE_PAUSED:
+                stateName = "PAUSED";
                 isPaused = true;
                 mPauseImg.setImageDrawable(getResources().getDrawable(R.drawable.v_play));
                 break;
             case VideoView.STATE_ERROR:
+                stateName = "ERROR";
                 listener.errReplay();
                 break;
             case VideoView.STATE_PREPARED:
-                listener.prepared();
+                stateName = "PREPARED";
+                try {
+                    if (mControlWrapper != null && mControlWrapper.getVideoSize() != null && mControlWrapper.getVideoSize().length >= 2) {
+                        android.util.Log.i("VodController", "Video size: " + mControlWrapper.getVideoSize()[0] + " x " + mControlWrapper.getVideoSize()[1]);
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("VodController", "Error getting video size", e);
+                }
+                android.util.Log.i("VodController", "Calling listener.prepared()");
+                if (listener != null) {
+                    listener.prepared();
+                } else {
+                    android.util.Log.e("VodController", "listener is null!");
+                }
                 // takagen99 : Add Video Resolution
                 if (mControlWrapper.getVideoSize().length >= 2) {
                     mPlayerResolution.setText(mControlWrapper.getVideoSize()[0] + " x " + mControlWrapper.getVideoSize()[1]);
                     initLandscapePortraitBtnInfo();
                 }
+                break;
             case VideoView.STATE_BUFFERED:
+                stateName = "BUFFERED";
                 break;
             case VideoView.STATE_PREPARING:
+                stateName = "PREPARING";
+                break;
             case VideoView.STATE_BUFFERING:
+                stateName = "BUFFERING";
                 break;
             case VideoView.STATE_PLAYBACK_COMPLETED:
+                stateName = "PLAYBACK_COMPLETED";
                 listener.playNext(true);
                 break;
+            default:
+                stateName = "UNKNOWN(" + playState + ")";
         }
+        android.util.Log.i("VodController", "Play state changed to: " + stateName);
     }
 
     boolean isBottomVisible() {

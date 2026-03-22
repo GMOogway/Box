@@ -12,6 +12,8 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Icon;
+import android.media.MediaPlayer;
+import android.media.TimedText;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -365,6 +367,42 @@ public class PlayActivity extends BaseActivity {
 
             @Override
             public void prepared() {
+                String logMsg = "========== PlayActivity prepared() callback called ==========";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
+                logMsg = "mVideoView: " + (mVideoView != null ? "not null" : "null");
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
+                if (mVideoView != null) {
+                    logMsg = "MediaPlayer: " + (mVideoView.getMediaPlayer() != null ? mVideoView.getMediaPlayer().getClass().getSimpleName() : "null");
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+
+                    logMsg = "mController: " + (mController != null ? "not null" : "null");
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+
+                    logMsg = "mController.mSubtitleView: " + (mController.mSubtitleView != null ? "not null" : "null");
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+
+                    if (mController.mSubtitleView != null) {
+                        logMsg = "mSubtitleView.isInternal: " + mController.mSubtitleView.isInternal;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
+
+                        logMsg = "mSubtitleView.hasInternal: " + mController.mSubtitleView.hasInternal;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
+
+                        logMsg = "mSubtitleView.getVisibility(): " + mController.mSubtitleView.getVisibility();
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
+                    }
+                }
+
                 initSubtitleView();
             }
 
@@ -813,6 +851,14 @@ public class PlayActivity extends BaseActivity {
     }
 
     void startPlayUrl(String url, HashMap<String, String> headers) {
+        final String logMsg0 = "========== PlayActivity startPlayUrl called ==========";
+        LOG.i(logMsg0);
+        writeDebugLog(logMsg0);
+
+        logMsg0 = "URL: " + url;
+        LOG.i(logMsg0);
+        writeDebugLog(logMsg0);
+
         final String finalUrl = url;
         runOnUiThread(new Runnable() {
             @Override
@@ -825,6 +871,10 @@ public class PlayActivity extends BaseActivity {
                         videoURL = url;
                         try {
                             int playerType = mVodPlayerCfg.getInt("pl");
+                            String logMsg1 = "Player type: " + playerType + " (" + PlayerHelper.getPlayerName(playerType) + ")";
+                            LOG.i(logMsg1);
+                            writeDebugLog(logMsg1);
+
                             // takagen99: Check for External Player
                             extPlay = false;
                             if (playerType >= 10) {
@@ -871,6 +921,9 @@ public class PlayActivity extends BaseActivity {
                         } else {
                             mVideoView.setUrl(url);
                         }
+                        String logMsg2 = "Calling mVideoView.start()";
+                        LOG.i(logMsg2);
+                        writeDebugLog(logMsg2);
                         mVideoView.start();
                         mController.resetSpeed();
                     }
@@ -880,43 +933,205 @@ public class PlayActivity extends BaseActivity {
     }
 
     private void initSubtitleView() {
+        String logMsg = "========== PlayActivity initSubtitleView called ==========";
+        LOG.i(logMsg);
+        writeDebugLog(logMsg);
+
+        logMsg = "MediaPlayer class: " + (mVideoView.getMediaPlayer() != null ? mVideoView.getMediaPlayer().getClass().getSimpleName() : "null");
+        LOG.i(logMsg);
+        writeDebugLog(logMsg);
+
         AbstractPlayer mediaPlayer = mVideoView.getMediaPlayer();
         TrackInfo trackInfo = null;
+
         if (mVideoView.getMediaPlayer() instanceof IjkmPlayer) {
+            logMsg = "========== IjkmPlayer detected ==========";
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
             trackInfo = ((IjkmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            logMsg = "IjkmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
+                logMsg = "IjkmPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
+                // 打印所有字幕轨道信息
+                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
+                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
+                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                }
+
+                // 当前选中的字幕
+                int selectedSubtitle = trackInfo.getSubtitleSelected(true);
+                logMsg = "Currently selected subtitle track: " + selectedSubtitle;
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
                 mController.mSubtitleView.hasInternal = true;
+                logMsg = "IjkmPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+            } else {
+                logMsg = "IjkmPlayer has no internal subtitles";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
             }
             ((IjkmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new IMediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
-                    if (mController.mSubtitleView.isInternal) {
+                    final String logMsg1 = "========== PlayActivity IjkmPlayer onTimedText called ==========";
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
+
+                    final String logMsg2 = "isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg2);
+                    writeDebugLog(logMsg2);
+
+                    if (mController.mSubtitleView.isInternal && text != null) {
+                        String textContent = text.getText();
+                        final String logMsg3 = "text content: [" + (textContent != null ? textContent : "null") + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
                         Subtitle subtitle = new Subtitle();
-                        subtitle.content = text.getText();
+                        subtitle.content = textContent;
+                        final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                        LOG.i(logMsg4);
+                        writeDebugLog(logMsg4);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
+                    } else {
+                        final String logMsg5 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", text: " + (text != null ? "not null" : "null");
+                        LOG.i(logMsg5);
+                        writeDebugLog(logMsg5);
                     }
                 }
             });
         }
 
         if (mVideoView.getMediaPlayer() instanceof EXOmPlayer) {
+            logMsg = "========== EXOmPlayer detected ==========";
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
             trackInfo = ((EXOmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            logMsg = "EXOmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
+                logMsg = "EXOmPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
+                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
+                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
+                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                }
+
                 mController.mSubtitleView.hasInternal = true;
+                logMsg = "EXOmPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+            } else {
+                logMsg = "EXOmPlayer has no internal subtitles";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
             }
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
                 public void onCues(@NonNull List<Cue> cues) {
+                    final String logMsg1 = "========== PlayActivity EXOmPlayer onCues called ==========";
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
+
+                    final String logMsg2 = "cues size: " + cues.size();
+                    LOG.i(logMsg2);
+                    writeDebugLog(logMsg2);
+
                     if (cues.size() > 0) {
                         CharSequence ss = cues.get(0).text;
+                        final String logMsg3 = "cue text: [" + (ss != null ? ss.toString() : "null") + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
                         if (ss != null && mController.mSubtitleView.isInternal) {
                             Subtitle subtitle = new Subtitle();
                             subtitle.content = ss.toString();
+                            final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                            LOG.i(logMsg4);
+                            writeDebugLog(logMsg4);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
-                    }else {
+                    } else {
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = "";
+                        mController.mSubtitleView.onSubtitleChanged(subtitle);
+                    }
+                }
+            });
+        }
+
+        if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
+            logMsg = "========== AndroidMediaPlayer detected ==========";
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
+            trackInfo = ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            logMsg = "AndroidMediaPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
+
+            if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
+                logMsg = "AndroidMediaPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+
+                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
+                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
+                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                }
+
+                mController.mSubtitleView.hasInternal = true;
+                logMsg = "AndroidMediaPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+            } else {
+                logMsg = "AndroidMediaPlayer has no internal subtitles";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
+            }
+            ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
+                @Override
+                public void onTimedText(MediaPlayer mp, TimedText text) {
+                    final String logMsg1 = "========== PlayActivity AndroidMediaPlayer onTimedText called ==========";
+                    LOG.i(logMsg1);
+                    writeDebugLog(logMsg1);
+
+                    final String logMsg2 = "isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg2);
+                    writeDebugLog(logMsg2);
+
+                    if (mController.mSubtitleView.isInternal && text != null) {
+                        String textContent = text.getText();
+                        final String logMsg3 = "text content: [" + (textContent != null ? textContent : "null") + "]";
+                        LOG.i(logMsg3);
+                        writeDebugLog(logMsg3);
+
+                        Subtitle subtitle = new Subtitle();
+                        subtitle.content = textContent;
+                        final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                        LOG.i(logMsg4);
+                        writeDebugLog(logMsg4);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
@@ -933,28 +1148,50 @@ public class PlayActivity extends BaseActivity {
                 mController.mSubtitleView.setSubtitlePath(playSubtitle);
             } else {
                 if (mController.mSubtitleView.hasInternal) {
-                    mController.mSubtitleView.isInternal = true;
-                    if (mediaPlayer instanceof IjkmPlayer) {
-                        if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
-                            List<TrackInfoBean> subtitleTrackList = trackInfo.getSubtitle();
-                            int selectedIndex = trackInfo.getSubtitleSelected(true);
-                            boolean hasCh = false;
-                            for (TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
-                                String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
-                                if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
-                                    hasCh = true;
-                                    if (selectedIndex != subtitleTrackInfoBean.trackId) {
-                                        ((IjkmPlayer) (mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.trackId);
-                                        break;
+                            mController.mSubtitleView.isInternal = true;
+                            logMsg = "Setting isInternal to true for internal subtitles";
+                            LOG.i(logMsg);
+                            writeDebugLog(logMsg);
+                
+                            if (mediaPlayer instanceof IjkmPlayer) {
+                                if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
+                                    List<TrackInfoBean> subtitleTrackList = trackInfo.getSubtitle();
+                                    int selectedIndex = trackInfo.getSubtitleSelected(true);
+                                    logMsg = "IjkmPlayer auto-selecting subtitle, current selected: " + selectedIndex;
+                                    LOG.i(logMsg);
+                                    writeDebugLog(logMsg);
+                
+                                    boolean hasCh = false;
+                                    for (TrackInfoBean subtitleTrackInfoBean : subtitleTrackList) {
+                                        String lowerLang = subtitleTrackInfoBean.language.toLowerCase();
+                                        if (lowerLang.startsWith("zh") || lowerLang.startsWith("ch")) {
+                                            hasCh = true;
+                                            if (selectedIndex != subtitleTrackInfoBean.trackId) {
+                                                logMsg = "Selecting Chinese subtitle: " + subtitleTrackInfoBean.trackId + ", lang: " + subtitleTrackInfoBean.language;
+                                                LOG.i(logMsg);
+                                                writeDebugLog(logMsg);
+                                                ((IjkmPlayer) (mVideoView.getMediaPlayer())).setTrack(subtitleTrackInfoBean.trackId);
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (!hasCh) {
+                                        logMsg = "No Chinese subtitle found, selecting first subtitle: " + subtitleTrackList.get(0).trackId;
+                                        LOG.i(logMsg);
+                                        writeDebugLog(logMsg);
+                                        ((IjkmPlayer) (mVideoView.getMediaPlayer())).setTrack(subtitleTrackList.get(0).trackId);
                                     }
                                 }
+                            } else if (mediaPlayer instanceof EXOmPlayer) {
+                                logMsg = "EXOmPlayer does not need explicit track selection for internal subtitles";
+                                LOG.i(logMsg);
+                                writeDebugLog(logMsg);
+                            } else if (mediaPlayer instanceof AndroidMediaPlayer) {
+                                logMsg = "AndroidMediaPlayer does not need explicit track selection for internal subtitles";
+                                LOG.i(logMsg);
+                                writeDebugLog(logMsg);
                             }
-                            if (!hasCh)
-                                ((IjkmPlayer) (mVideoView.getMediaPlayer())).setTrack(subtitleTrackList.get(0).trackId);
-                        }
-                    }
-                }
-            }
+                        }            }
         }
     }
 
@@ -2337,9 +2574,47 @@ public class PlayActivity extends BaseActivity {
         }
 
         @Override
-        public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
-            callback.onReceiveValue(true);
-        }
-    }
 
-}
+                public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
+
+                    callback.onReceiveValue(true);
+
+                }
+
+            }
+
+        
+
+            private void writeDebugLog(String message) {
+
+                try {
+
+                    String timestamp = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS").format(new java.util.Date());
+
+                    String logMessage = timestamp + " - " + message + "\n";
+
+                    java.io.File logFile = new java.io.File(android.os.Environment.getExternalStorageDirectory(), "dsm/subtitle_debug.log");
+
+                    java.io.File logDir = logFile.getParentFile();
+
+                    if (logDir != null && !logDir.exists()) {
+
+                        logDir.mkdirs();
+
+                    }
+
+                    java.io.FileWriter writer = new java.io.FileWriter(logFile, true);
+
+                    writer.write(logMessage);
+
+                    writer.close();
+
+                } catch (Exception e) {
+
+                    e.printStackTrace();
+
+                }
+
+            }
+
+        }
