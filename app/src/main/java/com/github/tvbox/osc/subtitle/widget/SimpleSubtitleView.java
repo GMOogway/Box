@@ -80,32 +80,65 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     public void onSubtitleChanged(@Nullable final Subtitle subtitle) {
-        android.util.Log.d("SimpleSubtitleView", "onSubtitleChanged called, isInternal: " + isInternal);
-        writeSubtitleDebugLog("SimpleSubtitleView onSubtitleChanged called, isInternal: " + isInternal);
-        if (StringUtils.isEmpty(subtitle) || subtitle.content == null) {
-            android.util.Log.d("SimpleSubtitleView", "Subtitle is empty or null, clearing text");
-            writeSubtitleDebugLog("Subtitle is empty or null, clearing text");
+        String logMsg = "========== SimpleSubtitleView onSubtitleChanged called ==========";
+        writeSubtitleDebugLog(logMsg);
+
+        logMsg = "isInternal: " + isInternal;
+        writeSubtitleDebugLog(logMsg);
+
+        if (subtitle == null) {
+            logMsg = "subtitle object is null";
+            writeSubtitleDebugLog(logMsg);
             setText(EMPTY_TEXT);
             return;
         }
+
+        if (subtitle.content == null) {
+            logMsg = "subtitle.content is null";
+            writeSubtitleDebugLog(logMsg);
+            setText(EMPTY_TEXT);
+            return;
+        }
+
+        String originalText = subtitle.content;
+        logMsg = "Original subtitle text: [" + originalText + "]";
+        writeSubtitleDebugLog(logMsg);
+
+        logMsg = "Original subtitle text length: " + originalText.length();
+        writeSubtitleDebugLog(logMsg);
+
+        if (StringUtils.isEmpty(subtitle)) {
+            logMsg = "Subtitle is empty, setting empty text";
+            writeSubtitleDebugLog(logMsg);
+            setText(EMPTY_TEXT);
+            return;
+        }
+
         String text = subtitle.content;
-        android.util.Log.d("SimpleSubtitleView", "Original subtitle text: " + text);
-        writeSubtitleDebugLog("Original subtitle text: " + text);
         if (text.startsWith("Dialogue:") || text.startsWith("m ")) {
-            android.util.Log.d("SimpleSubtitleView", "Skipping ASS/SSA format subtitle");
-            writeSubtitleDebugLog("Skipping ASS/SSA format subtitle");
+            logMsg = "Subtitle starts with Dialogue: or m , setting empty text";
+            writeSubtitleDebugLog(logMsg);
             setText(EMPTY_TEXT);
             return;
         }
+
         text = text.replaceAll("(?:\\r\\n)", "<br />");
         text = text.replaceAll("(?:\\r)", "<br />");
         text = text.replaceAll("(?:\\n)", "<br />");
         text = text.replaceAll("\\\\N", "<br />");
         text = text.replaceAll("\\{[\\s\\S]*?\\}", "");
         text = text.replaceAll("^.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,", "");
-        android.util.Log.d("SimpleSubtitleView", "Processed subtitle text: " + text);
-        writeSubtitleDebugLog("Processed subtitle text: " + text);
+
+        logMsg = "Processed subtitle text: [" + text + "]";
+        writeSubtitleDebugLog(logMsg);
+
+        logMsg = "Processed subtitle text length: " + text.length();
+        writeSubtitleDebugLog(logMsg);
+
         setText(Html.fromHtml(text));
+
+        logMsg = "Text set to TextView, current text: [" + getText() + "]";
+        writeSubtitleDebugLog(logMsg);
     }
 
     @Override
