@@ -855,9 +855,9 @@ public class PlayActivity extends BaseActivity {
         LOG.i(logMsg0);
         writeDebugLog(logMsg0);
 
-        logMsg0 = "URL: " + url;
-        LOG.i(logMsg0);
-        writeDebugLog(logMsg0);
+        final String logMsgUrl = "URL: " + url;
+        LOG.i(logMsgUrl);
+        writeDebugLog(logMsgUrl);
 
         final String finalUrl = url;
         runOnUiThread(new Runnable() {
