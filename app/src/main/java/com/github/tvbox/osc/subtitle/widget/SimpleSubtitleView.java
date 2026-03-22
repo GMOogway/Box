@@ -100,7 +100,7 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     public void setSubtitlePath(final String path) {
-        isInternal = false;
+        isInternal = false; // 切换到外部字幕
         mSubtitleEngine.setSubtitlePath(path);
     }
 
@@ -131,7 +131,10 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     public void start() {
-        mSubtitleEngine.start();
+        // 内置字幕不需要启动外部字幕引擎
+        if (!isInternal) {
+            mSubtitleEngine.start();
+        }
     }
 
     @Override
@@ -141,7 +144,10 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     public void resume() {
-        mSubtitleEngine.resume();
+        // 内置字幕不需要启动外部字幕引擎
+        if (!isInternal) {
+            mSubtitleEngine.resume();
+        }
     }
 
     @Override
@@ -152,6 +158,11 @@ public class SimpleSubtitleView extends TextView
     @Override
     public void destroy() {
         mSubtitleEngine.destroy();
+    }
+
+    // 停止外部字幕引擎（用于切换到内置字幕）
+    public void stopExternalSubtitle() {
+        mSubtitleEngine.stop();
     }
 
     @Override

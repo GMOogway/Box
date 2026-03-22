@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.TimedText;
 import android.net.Uri;
 import android.os.Build;
 import android.view.Surface;
@@ -21,12 +22,13 @@ import xyz.doikki.videoplayer.util.PlayerUtils;
 public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnInfoListener,
         MediaPlayer.OnBufferingUpdateListener, MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnVideoSizeChangedListener {
+        MediaPlayer.OnVideoSizeChangedListener, MediaPlayer.OnTimedTextListener {
 
     protected MediaPlayer mMediaPlayer;
     private int mBufferedPercent;
     protected Context mAppContext;
     private boolean mIsPreparing;
+    private MediaPlayer.OnTimedTextListener mOnTimedTextListener;
 
     public AndroidMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -43,6 +45,7 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
         mMediaPlayer.setOnBufferingUpdateListener(this);
         mMediaPlayer.setOnPreparedListener(this);
         mMediaPlayer.setOnVideoSizeChangedListener(this);
+        mMediaPlayer.setOnTimedTextListener(this);
     }
 
     @Override
@@ -301,9 +304,13 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
             if (trackInfoArray == null || trackInfoArray.length == 0) return null;
             TrackInfo data = new TrackInfo();
             int audioSelected = -1;
+            int subtitleSelected = -1;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 try {
                     audioSelected = mMediaPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
+                } catch (Exception ignored) {}
+                try {
+                    subtitleSelected = mMediaPlayer.getSelectedTrack(MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT);
                 } catch (Exception ignored) {}
             }
             int index = 0;
@@ -318,6 +325,15 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
                     t.trackId = index;
                     t.selected = index == audioSelected;
                     data.addAudio(t);
+                } else if (trackType == MediaPlayer.TrackInfo.MEDIA_TRACK_TYPE_TIMEDTEXT) {
+                    String language = info.getLanguage();
+                    String trackName = (data.getSubtitle().size() + 1) + "：" + (language != null && !language.isEmpty() && !language.equals("und") ? language : "字幕" + (data.getSubtitle().size() + 1));
+                    TrackInfoBean t = new TrackInfoBean();
+                    t.name = trackName;
+                    t.language = language != null ? language : "";
+                    t.trackId = index;
+                    t.selected = index == subtitleSelected;
+                    data.addSubtitle(t);
                 }
                 index++;
             }
@@ -334,5 +350,16 @@ public class AndroidMediaPlayer extends AbstractPlayer implements MediaPlayer.On
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void onTimedText(MediaPlayer mp, TimedText text) {
+        if (mOnTimedTextListener != null) {
+            mOnTimedTextListener.onTimedText(mp, text);
+        }
+    }
+
+    public void setOnTimedTextListener(MediaPlayer.OnTimedTextListener listener) {
+        mOnTimedTextListener = listener;
     }
 }

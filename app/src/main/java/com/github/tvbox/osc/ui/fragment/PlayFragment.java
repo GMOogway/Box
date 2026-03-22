@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
@@ -364,6 +365,7 @@ public class PlayFragment extends BaseLazyFragment {
     void setSubtitle(String path) {
         if (path != null && path.length() > 0) {
             // 设置字幕
+            mController.mSubtitleView.isInternal = false; // 切换到外部字幕
             mController.mSubtitleView.setVisibility(View.GONE);
             mController.mSubtitleView.setSubtitlePath(path);
             mController.mSubtitleView.setVisibility(View.VISIBLE);
@@ -458,6 +460,9 @@ public class PlayFragment extends BaseLazyFragment {
         if (mediaPlayer instanceof IjkmPlayer) {
             trackInfo = ((IjkmPlayer) mediaPlayer).getTrackInfo();
         }
+        if (mediaPlayer instanceof AndroidMediaPlayer) {
+            trackInfo = ((AndroidMediaPlayer) mediaPlayer).getTrackInfo();
+        }
 
         if (trackInfo == null) {
             Toast.makeText(mContext, getString(R.string.vod_sub_na), Toast.LENGTH_SHORT).show();
@@ -482,7 +487,7 @@ public class PlayFragment extends BaseLazyFragment {
                     mediaPlayer.pause();
                     long progress = mediaPlayer.getCurrentPosition();//保存当前进度，ijk 切换轨道 会有快进几秒
                     if (mediaPlayer instanceof IjkmPlayer) {
-                        mController.mSubtitleView.destroy();
+                        mController.mSubtitleView.stopExternalSubtitle();
                         mController.mSubtitleView.clearSubtitleCache();
                         mController.mSubtitleView.isInternal = true;
                         ((IjkmPlayer) mediaPlayer).setTrack(value.trackId);
@@ -496,10 +501,24 @@ public class PlayFragment extends BaseLazyFragment {
                         }, 800);
                     }
                     if (mediaPlayer instanceof EXOmPlayer) {
-                        mController.mSubtitleView.destroy();
+                        mController.mSubtitleView.stopExternalSubtitle();
                         mController.mSubtitleView.clearSubtitleCache();
                         mController.mSubtitleView.isInternal = true;
                         ((EXOmPlayer) mediaPlayer).selectExoTrack(value);
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                mediaPlayer.seekTo(progress);
+                                mediaPlayer.start();
+                                mController.startProgress();
+                            }
+                        }, 800);
+                    }
+                    if (mediaPlayer instanceof AndroidMediaPlayer) {
+                        mController.mSubtitleView.stopExternalSubtitle();
+                        mController.mSubtitleView.clearSubtitleCache();
+                        mController.mSubtitleView.isInternal = true;
+                        ((AndroidMediaPlayer) mediaPlayer).setTrack(value.trackId);
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -903,6 +922,23 @@ public class PlayFragment extends BaseLazyFragment {
                     }else{
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = "";
+                        mController.mSubtitleView.onSubtitleChanged(subtitle);
+                    }
+                }
+            });
+        }
+
+        if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
+            trackInfo = ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
+                mController.mSubtitleView.hasInternal = true;
+            }
+            ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
+                @Override
+                public void onTimedText(MediaPlayer mp, TimedText text) {
+                    if (mController.mSubtitleView.isInternal && text != null) {
+                        Subtitle subtitle = new Subtitle();
+                        subtitle.content = text.getText();
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
