@@ -80,12 +80,20 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     public void onSubtitleChanged(@Nullable final Subtitle subtitle) {
+        android.util.Log.d("SimpleSubtitleView", "onSubtitleChanged called, isInternal: " + isInternal);
+        writeSubtitleDebugLog("SimpleSubtitleView onSubtitleChanged called, isInternal: " + isInternal);
         if (StringUtils.isEmpty(subtitle) || subtitle.content == null) {
+            android.util.Log.d("SimpleSubtitleView", "Subtitle is empty or null, clearing text");
+            writeSubtitleDebugLog("Subtitle is empty or null, clearing text");
             setText(EMPTY_TEXT);
             return;
         }
         String text = subtitle.content;
+        android.util.Log.d("SimpleSubtitleView", "Original subtitle text: " + text);
+        writeSubtitleDebugLog("Original subtitle text: " + text);
         if (text.startsWith("Dialogue:") || text.startsWith("m ")) {
+            android.util.Log.d("SimpleSubtitleView", "Skipping ASS/SSA format subtitle");
+            writeSubtitleDebugLog("Skipping ASS/SSA format subtitle");
             setText(EMPTY_TEXT);
             return;
         }
@@ -95,6 +103,8 @@ public class SimpleSubtitleView extends TextView
         text = text.replaceAll("\\\\N", "<br />");
         text = text.replaceAll("\\{[\\s\\S]*?\\}", "");
         text = text.replaceAll("^.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,.*?,", "");
+        android.util.Log.d("SimpleSubtitleView", "Processed subtitle text: " + text);
+        writeSubtitleDebugLog("Processed subtitle text: " + text);
         setText(Html.fromHtml(text));
     }
 
@@ -256,6 +266,19 @@ public class SimpleSubtitleView extends TextView
         backGroundText.setTextColor(backGroundTextColor);
         //将背景的文字对齐方式做同步
         backGroundText.setGravity(getGravity());
+    }
+
+    private void writeSubtitleDebugLog(String message) {
+        try {
+            java.io.File logFile = new java.io.File("/sdcard/dsm/subtitle_debug.log");
+            java.io.FileWriter writer = new java.io.FileWriter(logFile, true);
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            String timestamp = sdf.format(new java.util.Date());
+            writer.write(timestamp + " - " + message + "\n");
+            writer.close();
+        } catch (Exception e) {
+            // 忽略写入错误
+        }
     }
 
 }

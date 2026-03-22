@@ -890,15 +890,31 @@ public class PlayFragment extends BaseLazyFragment {
         TrackInfo trackInfo = null;
         if (mVideoView.getMediaPlayer() instanceof IjkmPlayer) {
             trackInfo = ((IjkmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            String logMsg = "IjkmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
                 mController.mSubtitleView.hasInternal = true;
+                logMsg = "IjkmPlayer has internal subtitles, setting hasInternal = true";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
             }
             ((IjkmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new IMediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
-                    if (mController.mSubtitleView.isInternal) {
+                    String logMsg = "IjkmPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
+                    if (mController.mSubtitleView.isInternal && text != null) {
+                        String textContent = text.getText();
+                        logMsg = "IjkmPlayer subtitle text: " + textContent;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
                         Subtitle subtitle = new Subtitle();
-                        subtitle.content = text.getText();
+                        subtitle.content = textContent;
+                        logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
@@ -907,17 +923,32 @@ public class PlayFragment extends BaseLazyFragment {
 
         if (mVideoView.getMediaPlayer() instanceof EXOmPlayer) {
             trackInfo = ((EXOmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            String logMsg = "EXOmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
                 mController.mSubtitleView.hasInternal = true;
+                logMsg = "EXOmPlayer has internal subtitles, setting hasInternal = true";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
             }
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
                 public void onCues(@NonNull List<Cue> cues) {
+                    logMsg = "EXOmPlayer onCues called, cues size: " + cues.size();
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
                     if (cues.size() > 0) {
                         CharSequence ss = cues.get(0).text;
+                        logMsg = "EXOmPlayer subtitle text: " + (ss != null ? ss.toString() : "null");
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
                         if (ss != null && mController.mSubtitleView.isInternal) {
                             Subtitle subtitle = new Subtitle();
                             subtitle.content = ss.toString();
+                            logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
+                            LOG.i(logMsg);
+                            writeDebugLog(logMsg);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
                     }else{
@@ -931,15 +962,31 @@ public class PlayFragment extends BaseLazyFragment {
 
         if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
             trackInfo = ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
+            String logMsg = "AndroidMediaPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
+            LOG.i(logMsg);
+            writeDebugLog(logMsg);
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
                 mController.mSubtitleView.hasInternal = true;
+                logMsg = "AndroidMediaPlayer has internal subtitles, setting hasInternal = true";
+                LOG.i(logMsg);
+                writeDebugLog(logMsg);
             }
             ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(MediaPlayer mp, TimedText text) {
+                    logMsg = "AndroidMediaPlayer onTimedText called, isInternal: " + mController.mSubtitleView.isInternal;
+                    LOG.i(logMsg);
+                    writeDebugLog(logMsg);
                     if (mController.mSubtitleView.isInternal && text != null) {
+                        String textContent = text.getText();
+                        logMsg = "AndroidMediaPlayer subtitle text: " + textContent;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
                         Subtitle subtitle = new Subtitle();
-                        subtitle.content = text.getText();
+                        subtitle.content = textContent;
+                        logMsg = "Calling onSubtitleChanged with: " + subtitle.content;
+                        LOG.i(logMsg);
+                        writeDebugLog(logMsg);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
@@ -2268,6 +2315,19 @@ public class PlayFragment extends BaseLazyFragment {
         @Override
         public void onReceivedSslError(XWalkView view, ValueCallback<Boolean> callback, SslError error) {
             callback.onReceiveValue(true);
+        }
+    }
+
+    private void writeDebugLog(String message) {
+        try {
+            java.io.File logFile = new java.io.File("/sdcard/dsm/subtitle_debug.log");
+            java.io.FileWriter writer = new java.io.FileWriter(logFile, true);
+            java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+            String timestamp = sdf.format(new java.util.Date());
+            writer.write(timestamp + " - " + message + "\n");
+            writer.close();
+        } catch (Exception e) {
+            // 忽略写入错误
         }
     }
 }
