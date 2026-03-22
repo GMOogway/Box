@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.media.MediaPlayer;
+import android.media.TimedText;
 import android.net.Uri;
 import android.net.http.SslError;
 import android.os.Build;
