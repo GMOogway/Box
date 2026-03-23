@@ -886,64 +886,28 @@ public class PlayFragment extends BaseLazyFragment {
     }
 
     private void initSubtitleView() {
-        String logMsg = "========== initSubtitleView called ==========";
-        LOG.i(logMsg);
-        writeDebugLog(logMsg);
-
-        logMsg = "MediaPlayer class: " + (mVideoView.getMediaPlayer() != null ? mVideoView.getMediaPlayer().getClass().getSimpleName() : "null");
-        LOG.i(logMsg);
-        writeDebugLog(logMsg);
 
         AbstractPlayer mediaPlayer = mVideoView.getMediaPlayer();
         TrackInfo trackInfo = null;
 
         if (mVideoView.getMediaPlayer() instanceof IjkmPlayer) {
-            logMsg = "========== IjkmPlayer detected ==========";
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
 
             trackInfo = ((IjkmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
-            logMsg = "IjkmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
 
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
-                logMsg = "IjkmPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
-
-                // 打印所有字幕轨道信息
-                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
-                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
-                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
-                }
 
                 // 当前选中的字幕
                 int selectedSubtitle = trackInfo.getSubtitleSelected(true);
-                logMsg = "Currently selected subtitle track: " + selectedSubtitle;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 mController.mSubtitleView.hasInternal = true;
-                logMsg = "IjkmPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 // 自动选择第一个字幕轨道（延迟执行，确保播放器已启动）
                 List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
                 if (selectedSubtitle == -1 && subtitleList.size() > 0) {
                     final TrackInfoBean firstSubtitle = subtitleList.get(0);
-                    logMsg = "Will auto-select first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            final String logMsg2 = "========== Now selecting subtitle track: " + firstSubtitle.trackId + " ==========";
-                            LOG.i(logMsg2);
-                            writeDebugLog(logMsg2);
                             ((IjkmPlayer) mVideoView.getMediaPlayer()).setTrack(firstSubtitle.trackId);
 
                             // 延迟后再检查选中状态
@@ -952,110 +916,45 @@ public class PlayFragment extends BaseLazyFragment {
                                 public void run() {
                                     TrackInfo newTrackInfo = ((IjkmPlayer) mVideoView.getMediaPlayer()).getTrackInfo();
                                     int newSelected = newTrackInfo.getSubtitleSelected(true);
-                                    final String logMsg3 = "After selection, current selected subtitle track: " + newSelected;
-                                    LOG.i(logMsg3);
-                                    writeDebugLog(logMsg3);
                                 }
                             }, 500);
                         }
                     }, 1000); // 延迟1秒
-                } else {
-                    logMsg = "Subtitle track already selected or no subtitles available";
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                 }
-            } else {
-                logMsg = "IjkmPlayer has no internal subtitles";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
             }
             ((IjkmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new IMediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(IMediaPlayer mp, IjkTimedText text) {
-                    final String logMsg1 = "========== IjkmPlayer onTimedText called ==========";
-                    LOG.i(logMsg1);
-                    writeDebugLog(logMsg1);
-
-                    final String logMsg2 = "isInternal: " + mController.mSubtitleView.isInternal;
-                    LOG.i(logMsg2);
-                    writeDebugLog(logMsg2);
 
                     if (mController.mSubtitleView.isInternal && text != null) {
                         String textContent = text.getText();
-                        final String logMsg3 = "text object class: " + text.getClass().getSimpleName();
-                        LOG.i(logMsg3);
-                        writeDebugLog(logMsg3);
-
-                        final String logMsg4 = "text content: [" + (textContent != null ? textContent : "null") + "]";
-                        LOG.i(logMsg4);
-                        writeDebugLog(logMsg4);
-
-                        final String logMsg5 = "text content length: " + (textContent != null ? textContent.length() : "null");
-                        LOG.i(logMsg5);
-                        writeDebugLog(logMsg5);
 
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = textContent;
-                        final String logMsg6 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
-                        LOG.i(logMsg6);
-                        writeDebugLog(logMsg6);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
-                    } else {
-                        final String logMsg7 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", text: " + (text != null ? "not null" : "null");
-                        LOG.i(logMsg7);
-                        writeDebugLog(logMsg7);
                     }
                 }
             });
         }
 
         if (mVideoView.getMediaPlayer() instanceof EXOmPlayer) {
-            logMsg = "========== EXOmPlayer detected ==========";
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
 
             trackInfo = ((EXOmPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
-            logMsg = "EXOmPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
 
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
-                logMsg = "EXOmPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
-
-                // 打印所有字幕轨道信息
-                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
-                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
-                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
-                }
 
                 // 当前选中的字幕
                 int selectedSubtitle = trackInfo.getSubtitleSelected(true);
-                logMsg = "Currently selected subtitle track: " + selectedSubtitle;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 mController.mSubtitleView.hasInternal = true;
-                logMsg = "EXOmPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 // 自动选择第一个字幕轨道（延迟执行，确保播放器已启动）
                 List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
                 if (selectedSubtitle == -1 && subtitleList.size() > 0) {
                     final TrackInfoBean firstSubtitle = subtitleList.get(0);
-                    logMsg = "Will auto-select first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            final String logMsg2 = "========== Now selecting subtitle track: " + firstSubtitle.trackId + " ==========";
-                            LOG.i(logMsg2);
-                            writeDebugLog(logMsg2);
                             ((EXOmPlayer) mVideoView.getMediaPlayer()).selectExoTrack(firstSubtitle);
 
                             // 延迟后再检查选中状态
@@ -1064,46 +963,22 @@ public class PlayFragment extends BaseLazyFragment {
                                 public void run() {
                                     TrackInfo newTrackInfo = ((EXOmPlayer) mVideoView.getMediaPlayer()).getTrackInfo();
                                     int newSelected = newTrackInfo.getSubtitleSelected(true);
-                                    final String logMsg3 = "After selection, current selected subtitle track: " + newSelected;
-                                    LOG.i(logMsg3);
-                                    writeDebugLog(logMsg3);
                                 }
                             }, 500);
                         }
                     }, 1000); // 延迟1秒
-                } else {
-                    logMsg = "Subtitle track already selected or no subtitles available";
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                 }
-            } else {
-                logMsg = "EXOmPlayer has no internal subtitles";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
             }
             ((EXOmPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new Player.Listener() {
                 @Override
                 public void onCues(@NonNull List<Cue> cues) {
-                    final String logMsg1 = "========== EXOmPlayer onCues called ==========";
-                    LOG.i(logMsg1);
-                    writeDebugLog(logMsg1);
-
-                    final String logMsg2 = "cues size: " + cues.size();
-                    LOG.i(logMsg2);
-                    writeDebugLog(logMsg2);
 
                     if (cues.size() > 0) {
                         CharSequence ss = cues.get(0).text;
-                        final String logMsg3 = "cue text: [" + (ss != null ? ss.toString() : "null") + "]";
-                        LOG.i(logMsg3);
-                        writeDebugLog(logMsg3);
 
                         if (ss != null && mController.mSubtitleView.isInternal) {
                             Subtitle subtitle = new Subtitle();
                             subtitle.content = ss.toString();
-                            final String logMsg4 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
-                            LOG.i(logMsg4);
-                            writeDebugLog(logMsg4);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         }
                     }else{
@@ -1115,53 +990,24 @@ public class PlayFragment extends BaseLazyFragment {
             });
         }
 
-if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
-            logMsg = "========== AndroidMediaPlayer detected ==========";
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
+        if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
 
             trackInfo = ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).getTrackInfo();
-            logMsg = "AndroidMediaPlayer getTrackInfo called, subtitle count: " + (trackInfo != null ? trackInfo.getSubtitle().size() : "null");
-            LOG.i(logMsg);
-            writeDebugLog(logMsg);
 
             if (trackInfo != null && trackInfo.getSubtitle().size() > 0) {
-                logMsg = "AndroidMediaPlayer has " + trackInfo.getSubtitle().size() + " subtitle tracks";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
-
-                // 打印所有字幕轨道信息
-                for (int i = 0; i < trackInfo.getSubtitle().size(); i++) {
-                    TrackInfoBean sub = trackInfo.getSubtitle().get(i);
-                    logMsg = "  Subtitle[" + i + "]: id=" + sub.trackId + ", name=" + sub.name + ", lang=" + sub.language + ", selected=" + sub.selected;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
-                }
 
                 // 当前选中的字幕
                 int selectedSubtitle = trackInfo.getSubtitleSelected(true);
-                logMsg = "Currently selected subtitle track: " + selectedSubtitle;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 mController.mSubtitleView.hasInternal = true;
-                logMsg = "AndroidMediaPlayer has internal subtitles, setting hasInternal = true, isInternal=" + mController.mSubtitleView.isInternal;
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
 
                 // 自动选择第一个字幕轨道（延迟执行，确保播放器已启动）
                 List<TrackInfoBean> subtitleList = trackInfo.getSubtitle();
                 if (selectedSubtitle == -1 && subtitleList.size() > 0) {
                     final TrackInfoBean firstSubtitle = subtitleList.get(0);
-                    logMsg = "Will auto-select first subtitle track: " + firstSubtitle.trackId + ", name: " + firstSubtitle.name;
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                     new Handler().postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            final String logMsg2 = "========== Now selecting subtitle track: " + firstSubtitle.trackId + " ==========";
-                            LOG.i(logMsg2);
-                            writeDebugLog(logMsg2);
                             ((AndroidMediaPlayer) mVideoView.getMediaPlayer()).setTrack(firstSubtitle.trackId);
 
                             // 延迟后再检查选中状态
@@ -1170,53 +1016,21 @@ if (mVideoView.getMediaPlayer() instanceof AndroidMediaPlayer) {
                                 public void run() {
                                     TrackInfo newTrackInfo = ((AndroidMediaPlayer) mVideoView.getMediaPlayer()).getTrackInfo();
                                     int newSelected = newTrackInfo.getSubtitleSelected(true);
-                                    final String logMsg3 = "After selection, current selected subtitle track: " + newSelected;
-                                    LOG.i(logMsg3);
-                                    writeDebugLog(logMsg3);
                                 }
                             }, 500);
                         }
                     }, 1000); // 延迟1秒
-                } else {
-                    logMsg = "Subtitle track already selected or no subtitles available";
-                    LOG.i(logMsg);
-                    writeDebugLog(logMsg);
                 }
-            } else {
-                logMsg = "AndroidMediaPlayer has no internal subtitles";
-                LOG.i(logMsg);
-                writeDebugLog(logMsg);
             }
             ((AndroidMediaPlayer) (mVideoView.getMediaPlayer())).setOnTimedTextListener(new MediaPlayer.OnTimedTextListener() {
                 @Override
                 public void onTimedText(MediaPlayer mp, TimedText text) {
-                    final String logMsg1 = "========== AndroidMediaPlayer onTimedText called ==========";
-                    LOG.i(logMsg1);
-                    writeDebugLog(logMsg1);
-
-                    final String logMsg2 = "isInternal: " + mController.mSubtitleView.isInternal;
-                    LOG.i(logMsg2);
-                    writeDebugLog(logMsg2);
-
-                    final String logMsg3 = "text: " + (text != null ? "not null" : "null");
-                    LOG.i(logMsg3);
-                    writeDebugLog(logMsg3);
 
                     if (mController.mSubtitleView.isInternal && text != null) {
                         String textContent = text.getText();
-                        final String logMsg4 = "text content: [" + (textContent != null ? textContent : "null") + "]";
-                        LOG.i(logMsg4);
-                        writeDebugLog(logMsg4);
-
-                        final String logMsg5 = "text content length: " + (textContent != null ? textContent.length() : "null");
-                        LOG.i(logMsg5);
-                        writeDebugLog(logMsg5);
 
                         Subtitle subtitle = new Subtitle();
                         subtitle.content = textContent;
-                        final String logMsg6 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
-                        LOG.i(logMsg6);
-                        writeDebugLog(logMsg6);
                         mController.mSubtitleView.onSubtitleChanged(subtitle);
                     }
                 }
