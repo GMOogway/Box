@@ -1010,20 +1010,46 @@ public class PlayActivity extends BaseActivity {
                         LOG.i(logMsg3);
                         writeDebugLog(logMsg3);
 
-                        if (bitmapData != null) {
-                            logMsg3 = "Bitmap subtitle detected, length: " + bitmapData.length;
-                            LOG.i(logMsg3);
-                            writeDebugLog(logMsg3);
-                            // 图形字幕无法直接显示，需要渲染
-                            // 这里暂时跳过
-                        }
-
                         // 检查文本边框
                         android.graphics.Rect bounds = text.getBounds();
                         logMsg3 = "text.getBounds(): " + (bounds != null ? bounds.toString() : "null");
                         LOG.i(logMsg3);
                         writeDebugLog(logMsg3);
 
+                        // 优先处理图形字幕
+                        if (bitmapData != null && bounds != null && mController.mSubtitleView.isInternal) {
+                            logMsg3 = "Bitmap subtitle detected, length: " + bitmapData.length;
+                            LOG.i(logMsg3);
+                            writeDebugLog(logMsg3);
+
+                            try {
+                                // 从int数组创建位图
+                                int width = bounds.width();
+                                int height = bounds.height();
+                                logMsg3 = "Bitmap dimensions: " + width + "x" + height;
+                                LOG.i(logMsg3);
+                                writeDebugLog(logMsg3);
+
+                                android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+                                bitmap.setPixels(bitmapData, 0, width, 0, 0, width, height);
+
+                                Subtitle subtitle = new Subtitle();
+                                subtitle.bitmap = bitmap;
+                                subtitle.content = "";  // 位图字幕不需要文本
+
+                                final String logMsg4 = "Calling onSubtitleChanged with bitmap subtitle";
+                                LOG.i(logMsg4);
+                                writeDebugLog(logMsg4);
+                                mController.mSubtitleView.onSubtitleChanged(subtitle);
+                                return;  // 处理完位图字幕后直接返回
+                            } catch (Exception e) {
+                                logMsg3 = "Failed to create bitmap from bitmapData: " + e.getMessage();
+                                LOG.i(logMsg3);
+                                writeDebugLog(logMsg3);
+                            }
+                        }
+
+                        // 处理文本字幕
                         // 尝试使用 toString()
                         String textString = text.toString();
                         logMsg3 = "text.toString(): [" + textString + "]";
@@ -1143,22 +1169,36 @@ public class PlayActivity extends BaseActivity {
                             writeDebugLog(logMsg10);
                         }
 
-                        CharSequence ss = cues.get(0).text;
-                        final String logMsg11 = "cue[0].text: [" + (ss != null ? ss.toString() : "null") + "]";
-                        LOG.i(logMsg11);
-                        writeDebugLog(logMsg11);
-
-                        if (ss != null && !ss.toString().isEmpty() && mController.mSubtitleView.isInternal) {
+                        // 优先检查位图字幕（图形字幕）
+                        Cue firstCue = cues.get(0);
+                        if (firstCue.bitmap != null && mController.mSubtitleView.isInternal) {
+                            // 图形字幕 - 传递位图
                             Subtitle subtitle = new Subtitle();
-                            subtitle.content = ss.toString();
-                            final String logMsg12 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                            subtitle.bitmap = firstCue.bitmap;
+                            subtitle.content = "";  // 位图字幕不需要文本
+                            final String logMsg12 = "Calling onSubtitleChanged with bitmap subtitle";
                             LOG.i(logMsg12);
                             writeDebugLog(logMsg12);
                             mController.mSubtitleView.onSubtitleChanged(subtitle);
                         } else {
-                            final String logMsg13 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", ss: " + (ss != null ? ss.toString() : "null");
-                            LOG.i(logMsg13);
-                            writeDebugLog(logMsg13);
+                            // 文本字幕
+                            CharSequence ss = firstCue.text;
+                            final String logMsg11 = "cue[0].text: [" + (ss != null ? ss.toString() : "null") + "]";
+                            LOG.i(logMsg11);
+                            writeDebugLog(logMsg11);
+
+                            if (ss != null && !ss.toString().isEmpty() && mController.mSubtitleView.isInternal) {
+                                Subtitle subtitle = new Subtitle();
+                                subtitle.content = ss.toString();
+                                final String logMsg12 = "Calling onSubtitleChanged with content: [" + subtitle.content + "]";
+                                LOG.i(logMsg12);
+                                writeDebugLog(logMsg12);
+                                mController.mSubtitleView.onSubtitleChanged(subtitle);
+                            } else {
+                                final String logMsg13 = "Skipping - isInternal: " + mController.mSubtitleView.isInternal + ", ss: " + (ss != null ? ss.toString() : "null");
+                                LOG.i(logMsg13);
+                                writeDebugLog(logMsg13);
+                            }
                         }
                     } else {
                         Subtitle subtitle = new Subtitle();

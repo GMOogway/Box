@@ -48,6 +48,9 @@ public class SimpleSubtitleView extends TextView
 
     private int backGroundTextColor = Color.BLACK;//用于描边的TextView
 
+    // 当前显示的图形字幕位图
+    private android.graphics.Bitmap currentBitmap = null;
+
     public SimpleSubtitleView(final Context context) {
         super(context);
         backGroundText = new TextView(context);
@@ -89,9 +92,26 @@ public class SimpleSubtitleView extends TextView
         if (subtitle == null) {
             logMsg = "subtitle object is null";
             writeSubtitleDebugLog(logMsg);
-            setText(EMPTY_TEXT);
+            clearSubtitle();
             return;
         }
+
+        // 检查是否有位图字幕（图形字幕）
+        logMsg = "subtitle.bitmap: " + (subtitle.bitmap != null ? "not null" : "null");
+        writeSubtitleDebugLog(logMsg);
+
+        if (subtitle.bitmap != null) {
+            // 图形字幕
+            logMsg = "Displaying bitmap subtitle";
+            writeSubtitleDebugLog(logMsg);
+            currentBitmap = subtitle.bitmap;
+            setText(EMPTY_TEXT);  // 清除文本
+            invalidate();  // 触发重绘
+            return;
+        }
+
+        // 文本字幕
+        currentBitmap = null;  // 清除位图
 
         if (subtitle.content == null) {
             logMsg = "subtitle.content is null";
@@ -139,6 +159,15 @@ public class SimpleSubtitleView extends TextView
 
         logMsg = "Text set to TextView, current text: [" + getText() + "]";
         writeSubtitleDebugLog(logMsg);
+    }
+
+    /**
+     * 清除字幕内容（文本和位图）
+     */
+    private void clearSubtitle() {
+        setText(EMPTY_TEXT);
+        currentBitmap = null;
+        invalidate();
     }
 
     @Override
@@ -283,7 +312,34 @@ public class SimpleSubtitleView extends TextView
 
     @Override
     protected void onDraw(Canvas canvas) {
-        //其他地方，backGroundText和super的先后顺序影响不会很大，但是此处必须要先绘制backGroundText，
+        // 如果有图形字幕位图，绘制位图
+        if (currentBitmap != null && !currentBitmap.isRecycled()) {
+            // 计算位图位置（居中显示）
+            int viewWidth = getWidth();
+            int viewHeight = getHeight();
+            int bitmapWidth = currentBitmap.getWidth();
+            int bitmapHeight = currentBitmap.getHeight();
+
+            // 缩放位图以适应视图宽度，保持宽高比
+            float scale = Math.min(
+                (float) viewWidth / bitmapWidth,
+                (float) viewHeight / bitmapHeight
+            );
+
+            int scaledWidth = (int) (bitmapWidth * scale);
+            int scaledHeight = (int) (bitmapHeight * scale);
+
+            int left = (viewWidth - scaledWidth) / 2;
+            int top = (viewHeight - scaledHeight) / 2;
+
+            // 绘制位图
+            android.graphics.Rect src = new android.graphics.Rect(0, 0, bitmapWidth, bitmapHeight);
+            android.graphics.Rect dst = new android.graphics.Rect(left, top, left + scaledWidth, top + scaledHeight);
+            canvas.drawBitmap(currentBitmap, src, dst, null);
+            return;  // 位图字幕不显示文本
+        }
+
+        // 文本字幕：其他地方，backGroundText和super的先后顺序影响不会很大，但是此处必须要先绘制backGroundText，
         drawBackGroundText();
         backGroundText.draw(canvas);
         super.onDraw(canvas);

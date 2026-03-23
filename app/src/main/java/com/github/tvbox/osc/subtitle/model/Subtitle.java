@@ -26,6 +26,10 @@
 
 package com.github.tvbox.osc.subtitle.model;
 
+package com.github.tvbox.osc.subtitle.model;
+
+import android.graphics.Bitmap;
+
 public class Subtitle {
 
     public Style style;
@@ -35,5 +39,8 @@ public class Subtitle {
     public Time end;
 
     public String content = "";
+
+    // 图形字幕位图（用于PGS/Blu-ray格式的图形字幕）
+    public Bitmap bitmap;
 
 }
