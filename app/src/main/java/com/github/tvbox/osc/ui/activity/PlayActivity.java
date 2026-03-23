@@ -915,21 +915,19 @@ public class PlayActivity extends BaseActivity {
 
                             if (bounds != null && bounds.width() > 0 && bounds.height() > 0) {
 
-                                try {
-                                    // 从int数组创建位图
-                                    int width = bounds.width();
-                                    int height = bounds.height();
+                                // 从int数组创建位图
+                                int width = bounds.width();
+                                int height = bounds.height();
 
-                                    android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
-                                    bitmap.setPixels(bitmapData, 0, width, 0, 0, width, height);
+                                android.graphics.Bitmap bitmap = android.graphics.Bitmap.createBitmap(width, height, android.graphics.Bitmap.Config.ARGB_8888);
+                                bitmap.setPixels(bitmapData, 0, width, 0, 0, width, height);
 
-                                    Subtitle subtitle = new Subtitle();
-                                    subtitle.bitmap = bitmap;
-                                    subtitle.content = "";  // 位图字幕不需要文本
+                                Subtitle subtitle = new Subtitle();
+                                subtitle.bitmap = bitmap;
+                                subtitle.content = "";  // 位图字幕不需要文本
 
-                                    mController.mSubtitleView.onSubtitleChanged(subtitle);
-                                    return;  // 处理完位图字幕后直接返回
-                                }
+                                mController.mSubtitleView.onSubtitleChanged(subtitle)
+                                return;  // 处理完位图字幕后直接返回
                             }
                         }
 
