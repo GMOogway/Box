@@ -26,8 +26,6 @@
 
 package com.github.tvbox.osc.subtitle.model;
 
-package com.github.tvbox.osc.subtitle.model;
-
 import android.graphics.Bitmap;
 
 public class Subtitle {
