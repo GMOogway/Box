@@ -926,7 +926,7 @@ public class PlayActivity extends BaseActivity {
                                 subtitle.bitmap = bitmap;
                                 subtitle.content = "";  // 位图字幕不需要文本
 
-                                mController.mSubtitleView.onSubtitleChanged(subtitle)
+                                mController.mSubtitleView.onSubtitleChanged(subtitle);
                                 return;  // 处理完位图字幕后直接返回
                             }
                         }
