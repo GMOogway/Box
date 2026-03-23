@@ -61,6 +61,12 @@ public class IjkmPlayer extends IjkPlayer {
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ass_fontcolor", "0xFFFFFF00");
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ass_borderstyle", "1");
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "ass_force_style", "1");
+        // 启用PGS图形字幕支持
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "pgs", 1);
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_PLAYER, "pgs_subfile", 1);
+        // 启用所有字幕类型
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "fflags", "+ignidx");
+        mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_CODEC, "flags", "+loop+low_delay");
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_clear", 1);
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT, "dns_cache_timeout", -1);
         mMediaPlayer.setOption(IjkMediaPlayer.OPT_CATEGORY_FORMAT,"safe",0);
